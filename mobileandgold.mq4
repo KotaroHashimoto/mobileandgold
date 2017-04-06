@@ -11,6 +11,7 @@
 
 input double Entry_Lot = 0.1;
 input int Magic_Number = 1;
+input int ATR_Period = 14;
 
 const string indName = "SSS_Signal";
 
@@ -92,7 +93,7 @@ void OnTick()
     return;
   }
   
-  double atr = iATR(Symbol(), PERIOD_CURRENT, 14, 1);
+  double atr = iATR(Symbol(), PERIOD_CURRENT, ATR_Period, 1);
   
   if(atr < minSL) {
     Print("SL/TP is too close to entry price. Increase timeframe.");
