@@ -12,6 +12,7 @@
 input double Entry_Lot = 0.1;
 input int Magic_Number = 1;
 input int Signal_Margin = 8;
+input int ATR_Period = 14;
 
 const string arrowIndName = "0033_ArrowReal2";
 const string markIndName = "0011_High&BottomMark2";
@@ -19,6 +20,7 @@ const string markIndName = "0011_High&BottomMark2";
 string thisSymbol;
 double minLot;
 double maxLot;
+double minSL;
 
 //+------------------------------------------------------------------+
 //| Expert initialization function                                   |
@@ -30,6 +32,7 @@ int OnInit()
 
   minLot = MarketInfo(Symbol(), MODE_MINLOT);
   maxLot = MarketInfo(Symbol(), MODE_MAXLOT);
+  minSL = MarketInfo(Symbol(), MODE_STOPLEVEL) * Point;
   
 //---
    return(INIT_SUCCEEDED);
@@ -131,12 +134,19 @@ void OnTick()
     Print("lot size invalid, min = ", minLot, ", max = ", maxLot);
     return;
   }
+
+  double atr = iATR(Symbol(), PERIOD_CURRENT, ATR_Period, 1);
+  
+  if(atr < minSL) {
+    Print("SL/TP is too close to entry price. Increase timeframe.");
+    return;
+  }
   
   if(signal == OP_BUY) {
-    int ordered = OrderSend(thisSymbol, OP_BUY, Entry_Lot, NormalizeDouble(Ask, Digits), 3, 0, 0, NULL, Magic_Number);
+    int ordered = OrderSend(thisSymbol, OP_BUY, Entry_Lot, NormalizeDouble(Ask, Digits), 3, NormalizeDouble(Ask - atr, Digits), NormalizeDouble(Ask + atr, Digits), NULL, Magic_Number);
   }
   else if(signal == OP_SELL) {
-    int ordered = OrderSend(thisSymbol, OP_SELL, Entry_Lot, NormalizeDouble(Bid, Digits), 3, 0, 0, NULL, Magic_Number);
+    int ordered = OrderSend(thisSymbol, OP_SELL, Entry_Lot, NormalizeDouble(Bid, Digits), 3, NormalizeDouble(Bid + atr, Digits), NormalizeDouble(Bid - atr, Digits), NULL, Magic_Number);
   }
 }
 //+------------------------------------------------------------------+
