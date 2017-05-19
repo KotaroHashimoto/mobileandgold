@@ -11,12 +11,29 @@
 
 input int Magic_Number = 1;
 input double Entry_Lot = 0.1;
-input int Stop_Loss = 20;
-input int Take_Profit = 20;
+input double Stop_Loss = 20;
+input double Take_Profit = 20;
+input int Dragon_Range = 3;
 
 double sl;
 double tp;
 string thisSymbol;
+
+
+int getOrdersTotal() {
+
+  int count = 0;
+  if(0 < OrdersTotal()) {  
+    if(OrderSelect(0, SELECT_BY_POS)) {
+      if(!StringCompare(OrderSymbol(), thisSymbol) && OrderMagicNumber() == Magic_Number) {
+        count ++;
+      }
+    }
+  }
+
+  return count;
+}
+
 
 int getSupportSignal() {
 
@@ -33,11 +50,13 @@ int getSupportSignal() {
 
 int getDragonSignal() {
 
-  if(0 < iCustom(NULL, PERIOD_CURRENT, "DragonArrows", 2, 1)) {
-    return OP_BUY;
-  }
-  else if(0 < iCustom(NULL, PERIOD_CURRENT, "DragonArrows", 3, 1)) {
-    return OP_SELL;
+  for(int i = 1; i < Dragon_Range + 1; i++) {
+    if(0 < iCustom(NULL, PERIOD_CURRENT, "DragonArrows", 2, i)) {
+      return OP_BUY;
+    }
+    else if(0 < iCustom(NULL, PERIOD_CURRENT, "DragonArrows", 3, i)) {
+      return OP_SELL;
+    }
   }
 
   return -1;
@@ -76,7 +95,7 @@ void OnTick()
   int dragon = getDragonSignal();
   int support = getSupportSignal();
 
-  if(0 < OrdersTotal()) {  
+  if(0 < getOrdersTotal()) {  
     if(OrderSelect(0, SELECT_BY_POS)) {
       if(!StringCompare(OrderSymbol(), thisSymbol) && OrderMagicNumber() == Magic_Number) {
         if((dragon == OP_SELL && support == OP_SELL) && OrderType() == OP_BUY) {
