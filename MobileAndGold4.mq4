@@ -37,13 +37,15 @@ int getOrdersTotal() {
 
 int getSupportSignal() {
 
-  if(0 < iCustom(NULL, PERIOD_CURRENT, "SupportResistance", 6, 1)) {
-    return OP_BUY;
+  for(int i = 1; i < Dragon_Range + 1; i++) {
+    if(0 < iCustom(NULL, PERIOD_CURRENT, "SupportResistance", 6, i)) {
+      return OP_BUY;
+    }
+    else if(0 < iCustom(NULL, PERIOD_CURRENT, "SupportResistance", 7, i)) {
+      return OP_SELL;
+    }
   }
-  else if(0 < iCustom(NULL, PERIOD_CURRENT, "SupportResistance", 7, 1)) {
-    return OP_SELL;
-  }
-
+  
   return -1;
 }
 
